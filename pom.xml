@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>spark2.x</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <spark.version>2.4.5</spark.version>
+        <scala.version>2.11</scala.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.38</version>
+        </dependency>
+        <!--读取excel文件-->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.10-FINAL</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.10-FINAL</version>
+        </dependency>
+        <!--            <dependency>-->
+        <!--                <groupId>me.lyh</groupId>-->
+        <!--                <artifactId>xgboost4j</artifactId>-->
+        <!--                <version>0.71-20180420-230cb9b7</version>-->
+        <!--            </dependency>-->
+        <dependency>
+            <groupId>org.jpmml</groupId>
+            <artifactId>jpmml-sparkml</artifactId>
+            <version>1.2.14</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ml.dmlc</groupId>
+            <artifactId>xgboost4j-spark</artifactId>
+            <version>0.81</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jpmml</groupId>
+            <artifactId>jpmml-xgboost</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <version>2.5</version>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <!--
+                        在pom中配置了若干依赖，需要将pom中所有的依赖全部打包进一个jar包中，可以选择的方案有maven-assembly-plugin
+                        此时，在Target下会打包一个finalName-jar-with-dependencies.jar，(不指定finalName时：artifactId-version-with-dependencies.jar)
+                         -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.main.Invoker</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--                <plugin>-->
+            <!--                    <artifactId>maven-assembly-plugin</artifactId>-->
+            <!--                    <configuration>-->
+            <!--                        <archive>-->
+            <!--                            <manifest>-->
+            <!--                                <mainClass>test</mainClass>-->
+            <!--                            </manifest>-->
+            <!--                            <manifestEntries>-->
+            <!--                                <Class-Path>.</Class-Path>-->
+            <!--                            </manifestEntries>-->
+            <!--                        </archive>-->
+            <!--                        &lt;!&ndash; 将这一段注释掉 &ndash;&gt;-->
+            <!--                        &lt;!&ndash;<descriptorRefs>-->
+            <!--                            <descriptorRef>jar-with-dependencies</descriptorRef>-->
+            <!--                        </descriptorRefs>&ndash;&gt;-->
+            <!--                    </configuration>-->
+            <!--                    <executions>-->
+            <!--                        <execution>-->
+            <!--                            <id>make-assembly</id>-->
+            <!--                            <phase>package</phase>-->
+            <!--                            <goals>-->
+            <!--                                <goal>single</goal>-->
+            <!--                            </goals>-->
+            <!--                            &lt;!&ndash; 增加配置 &ndash;&gt;-->
+            <!--                            <configuration>-->
+            <!--                                &lt;!&ndash; assembly.xml文件路径 &ndash;&gt;-->
+            <!--                                <descriptors>-->
+            <!--                                    <descriptor>src/assembly/assembly.xml</descriptor>-->
+            <!--                                </descriptors>-->
+            <!--                            </configuration>-->
+            <!--                        </execution>-->
+            <!--                    </executions>-->
+            <!--                </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+
+
+</project>
