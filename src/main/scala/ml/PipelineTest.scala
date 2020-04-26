@@ -21,7 +21,8 @@ object PipelineTest {
     //
     titanicDF.registerTempTable("titanicDFview")
     val avgAge: Double = titanicDF.select("Age").agg("Age"->"avg").first().getDouble(0)
-    val DF1 = titanicDF.sqlContext.sql(s"select nvl(Age,$avgAge) from titanicDFview")
+    val DF1 = titanicDF.sqlContext.sql(s"select *,nvl(Age,$avgAge) as avgAge from titanicDFview")
+    DF1.show(10)
     val Array(trainDF,testDF) = DF1.randomSplit(Array(0.8,0.3))
     val sexIndex: StringIndexer = new StringIndexer().setInputCol("Sex").setOutputCol("SexIndex")
 
@@ -32,9 +33,9 @@ object PipelineTest {
       .setFeaturesCol("features")
       .setPredictionCol("prediction")
     val pipeline = new Pipeline().setStages(Array(sexIndex,sexEncode,vector,DT))
-//    val model: PipelineModel = pipeline.fit(trainDF)
+    //    val model: PipelineModel = pipeline.fit(trainDF)
     //val prediction = model.transform(testDF)
-//    prediction.show(10)
+    //    prediction.show(10)
     val paramMap: Array[ParamMap] = new ParamGridBuilder()
       .addGrid(DT.maxDepth,Array(6,8,10))
       .build()
@@ -44,10 +45,10 @@ object PipelineTest {
       .setNumFolds(3)
       .setEstimatorParamMaps(paramMap)
       .setEvaluator(new BinaryClassificationEvaluator()
-          .setLabelCol("Survived")
+        .setLabelCol("Survived")
         .setRawPredictionCol("prediction")
         .setMetricName("areaUnderROC")
-    )
+      )
 
     val model = crossValidator.fit(trainDF)
 
