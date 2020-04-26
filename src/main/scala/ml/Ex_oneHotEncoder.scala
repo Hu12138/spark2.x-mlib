@@ -35,7 +35,6 @@ object Ex_oneHotEncoder {
     val encoder = new OneHotEncoderEstimator().setInputCols(Array("sexIndex"))
         .setOutputCols(Array("SexEncoder"))
         .setDropLast(false)
-      .setDropLast(false)
       .setHandleInvalid("keep")
 
     val vectorAssembler: VectorAssembler = new VectorAssembler().setInputCols(Array("Survived","Age","SibSp","Parch","Fare","SexEncoder"))
