@@ -69,25 +69,27 @@ object Titanic_ml {
         .setOutputCol("Features")
       .setHandleInvalid("keep")
     val DT = new RandomForestClassifier().setFeaturesCol("Features").setLabelCol("survived").setPredictionCol("prediction")
-        .setFeatureSubsetStrategy("auto").setImpurity("gini")
+      .setImpurity("gini").setSeed(3)
 
     val pipeline = new Pipeline().setStages(Array(titleIndex,sexIndex,cabinIndex,embarked,encoder,vectorAssembler,DT))
 
     //再加一个交叉验证
     val paraMap = new ParamGridBuilder()
-      .addGrid(DT.maxDepth,Array(6,8,10))
-      .addGrid(DT.numTrees,Array(3,4,5))
+      .addGrid(DT.maxDepth,Array(4,6,8))
+
       .addGrid(DT.maxBins,Array(8,16,32))
+      .addGrid(DT.featureSubsetStrategy,Array("auto","sqrt","log2"))
+      .addGrid(DT.minInstancesPerNode,Array(1,3,10))
       .build()
     val crossValidator = new CrossValidator()
       .setEstimator(pipeline)
-      .setNumFolds(3)
+      .setNumFolds(5)
       .setEstimatorParamMaps(paraMap)
       .setEvaluator(
         new BinaryClassificationEvaluator()
           .setLabelCol("survived")
           .setRawPredictionCol("prediction")
-          .setMetricName("areaUnderROC")
+          .setMetricName("areaUnderPR")
       )
     val model = crossValidator.fit(featureDF)
        // model.save("src/main/data/model/model1")
@@ -140,7 +142,7 @@ object Titanic_ml {
 
     val prediction: DataFrame = model.transform(testData)
     prediction.show(10)
-    prediction.select("passengerId","prediction").write.format("csv").save("src/main/data/result4.csv")
+    prediction.select("passengerId","prediction").write.format("csv").save("src/main/data/result7.csv")
 
 
 
