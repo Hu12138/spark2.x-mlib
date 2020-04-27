@@ -6,10 +6,10 @@ import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.{OneHotEncoderEstimator, StringIndexer, VectorAssembler}
-import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import org.apache.spark.ml.tuning.{CrossValidator, CrossValidatorModel, ParamGridBuilder}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
+import utils.Middle
 object Titanic_ml_concat {
   def main(args: Array[String]): Unit = {
     val conf:SparkConf =new SparkConf(true)
@@ -30,6 +30,9 @@ object Titanic_ml_concat {
     import spark.implicits._
     val avgAge: Double = titanicDF.select($"Age").agg("Age" -> "avg").first().getDouble(0)
     val avgFare = titanicDF.select($"Fare").agg("Fare"->"avg").first().getDouble(0)
+//    val middle = spark.udf.register("middle",new Middle)
+    //改成中位数
+   // val avgFare = titanicDF.select($"Fare").agg("Fare"->"middle").first().getDouble(0)
 
     val titanicRDD: RDD[FeatureDF] = titanicDF.select($"PassengerId",$"Survived",$"Pclass",$"Name",$"Sex",$"Age",$"SibSp",$"Parch",$"Ticket",$"Fare",$"Cabin",$"Embarked").rdd.map(row=>{
       var embarked: String = row.getString(11)
@@ -115,9 +118,9 @@ object Titanic_ml_concat {
           .setRawPredictionCol("prediction")
           .setMetricName("areaUnderPR")
       )
-    val model = crossValidator.fit(trainDF)
+    val model: CrossValidatorModel = crossValidator.fit(trainDF)
 
-    val prediction = model.transform(testDF)
+    val prediction: DataFrame = model.transform(testDF)
     prediction.select("passengerId","prediction").write.format("csv").save("src/main/data/result10.csv")
    // prediction.select("survived","titleNameEncoded","PclassEncoded","sexEncoded","familyCateEncoded","cabinEncoded","embarkedEncoded").write.format("csv").save("src/main/data/result9.csv")
     spark.stop()

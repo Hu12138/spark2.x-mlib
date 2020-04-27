@@ -53,5 +53,4 @@ object Test {
     featureDF.show(10)
     spark.stop()
   }
-
 }
