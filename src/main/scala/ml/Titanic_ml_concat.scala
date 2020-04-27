@@ -41,8 +41,23 @@ object Titanic_ml_concat {
       }
       val cabinName = row.getString(10)
       val cabin = if(cabinName == null) "U" else cabinName.substring(0,1)
+      //名称头衔
+      val titleName:String = title_mapDict(row.getString(3))
       //填充缺省值
-      val ages = if(row.get(5) != null) row.getDouble(5) else avgAge
+      //val ages = if(row.get(5) != null) row.getDouble(5) else avgAge
+      //用称谓中位数代替
+      /*+-------+-----------+
+|  title|middle(age)|
++-------+-----------+
+|   Miss|       24.0|
+| Anyone|       18.0|
+|Officer|       36.0|
+|Royalty|       39.0|
+| Master|        3.0|
+|     Mr|       25.0|
+|    Mrs|       31.5|
+*/
+      val ages = if(row.get(5) != null) row.getDouble(5) else getMiddleAge(titleName)
       //年龄分类
       val age = if(ages >0 && ages <11) 0 else if (ages >10 && ages <21) 1
       else if (ages >20 && ages <31) 2
@@ -51,11 +66,10 @@ object Titanic_ml_concat {
       else if (ages >50 && ages <61) 5
       else if (ages >60 && ages <71) 6
       else 7
-      //名称头衔
-      var titleName:String = title_mapDict(row.getString(3))
+
 
       val familySize = row.getInt(6)+row.getInt(7)
-      val familyCate: Int = if(familySize<2) 1 else if (familySize >=2 && familySize<=4) 2 else 3
+      val familyCate: Int = if(familySize<2) 1 else if (familySize >=2 && familySize<=3) 2 else 3
       val passengerId = row.getInt(0)
       val survived = row.getInt(1)
       val Pclass = row.getInt(2)
@@ -121,9 +135,21 @@ object Titanic_ml_concat {
     val model: CrossValidatorModel = crossValidator.fit(trainDF)
 
     val prediction: DataFrame = model.transform(testDF)
-    prediction.select("passengerId","prediction").write.format("csv").save("src/main/data/result10.csv")
+    prediction.select("passengerId","prediction").write.format("csv").save("src/main/data/result12.csv")
    // prediction.select("survived","titleNameEncoded","PclassEncoded","sexEncoded","familyCateEncoded","cabinEncoded","embarkedEncoded").write.format("csv").save("src/main/data/result9.csv")
     spark.stop()
 
+  }
+  def getMiddleAge(title:String): Double ={
+    val middleAge = title match {
+      case "Miss" =>24.0
+      case "Anyone" =>18.0
+      case "Officer" =>36.0
+      case "Royalty" =>39.0
+      case "Master" =>3.0
+      case "Mr" =>25.0
+      case "Mrs" =>31.0
+    }
+    middleAge
   }
 }
